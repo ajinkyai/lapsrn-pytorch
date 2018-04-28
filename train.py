@@ -12,6 +12,7 @@ from math import log10
 from os.path import exists, join, basename
 from os import makedirs, remove
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -26,7 +27,7 @@ parser.add_argument('--batchSize', type=int, default=16, help='training batch si
 parser.add_argument('--testBatchSize', type=int, default=10, help='testing batch size')
 parser.add_argument('--nEpochs', type=int, default=50, help='number of epochs to train for')
 parser.add_argument('--checkpoint', type=str, default='./model', help='Path to checkpoint')
-parser.add_argument('--lr', type=float, default=1e-5, help='Learning Rate. Default=0.01')
+parser.add_argument('--lr', type=float, default=0.001, help='Learning Rate. Default=0.01')
 parser.add_argument('--cuda', action='store_true', help='use cuda?')
 parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
 parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
@@ -66,11 +67,11 @@ if cuda:
 
 
 
-
+losses = []
 
 def train(epoch):
     
-    for i in range(50):
+    for i in range(150):
         epoch_loss = 0
         for iteration, batch in enumerate(training_data_loader, 1):
             LR, HR_2_target, HR_4_target = Variable(batch[0]), Variable(batch[1]), Variable(batch[2])
@@ -89,7 +90,7 @@ def train(epoch):
             # loss3 = CharbonnierLoss(HR_8, HR_8_target)
             loss3 = 0
             loss = loss1+loss2+loss3   
-            
+            losses.append(loss)
             epoch_loss += loss.data[0]
             loss.backward()
             optimizer.step()
@@ -135,9 +136,11 @@ def checkpoint(epoch):
 
 lr=opt.lr
 for epoch in range(1, opt.nEpochs + 1):
-    optimizer = optim.SGD(model.parameters(), lr=opt.lr, momentum=0.9, weight_decay=1e-5)
+    optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-5)
     train(epoch)
     test()
     if epoch % 10 ==0:
         lr = lr/2
+        print('new learning rate {}'.format(lr))
         checkpoint(epoch)
+np.save('losses', losses)
