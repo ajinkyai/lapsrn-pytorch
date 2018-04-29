@@ -32,8 +32,6 @@ parser.add_argument('--cuda', action='store_true', help='use cuda?')
 parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
 parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
 parser.add_argument('--nIters', type=int, default=50, help='Number of iterations in epoch')
-parser.add_argument("--step", type=int, default=10, help="Sets the learning rate to the initial LR decayed by momentum every n epochs, Default: n=10")
-
 opt = parser.parse_args()
 
 print(opt)
@@ -142,29 +140,16 @@ def checkpoint(epoch):
         makedirs(opt.checkpoint)
     model_out_path = "model/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
-    print("C heckpoint saved to {}".format(model_out_path))
-
-
-
-def adjust_learning_rate(optimizer, epoch):
-    """Sets the learning rate to the initial LR decayed by 10 every 10 epochs"""
-    lr = opt.lr * (0.1 ** (epoch // opt.step))
-    return lr
-
+    print("Checkpoint saved to {}".format(model_out_path))
 
 lr=opt.lr
-optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-4)
 for epoch in range(1, opt.nEpochs + 1):
-    lr = adjust_learning_rate(optimizer, epoch-1)
-    print("New learning rate is {}".format(lr))
-    for param_group in optimizer.param_groups:
-        param_group["lr"] = lr
-    
+    optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-4)
     train(epoch)
-    if epoch % 10 ==0:
-        test()
-        # lr = lr/2
-        # print('new learning rate {}'.format(lr))
+    test()
+    if epoch % 50 ==0:
+        lr = lr/2
+        print('new learning rate {}'.format(lr))
         checkpoint(epoch)
 np.save('losses', losses)
 np.save('psnrs', psnrs)
