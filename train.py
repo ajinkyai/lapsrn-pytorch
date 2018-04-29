@@ -161,8 +161,8 @@ for epoch in range(1, opt.nEpochs + 1):
         param_group["lr"] = lr
     
     train(epoch)
-    test()
     if epoch % 10 ==0:
+        test()
         # lr = lr/2
         # print('new learning rate {}'.format(lr))
         checkpoint(epoch)
