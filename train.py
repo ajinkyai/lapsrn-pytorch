@@ -142,7 +142,7 @@ def checkpoint(epoch):
         makedirs(opt.checkpoint)
     model_out_path = "model/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
-    print("Checkpoint saved to {}".format(model_out_path))
+    print("C heckpoint saved to {}".format(model_out_path))
 
 
 
@@ -156,7 +156,7 @@ lr=opt.lr
 optimizer = optim.Adam(model.parameters(), lr=opt.lr, weight_decay=1e-4)
 for epoch in range(1, opt.nEpochs + 1):
     lr = adjust_learning_rate(optimizer, epoch-1)
-
+    print("New learning rate is {}".format(lr))
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
     
